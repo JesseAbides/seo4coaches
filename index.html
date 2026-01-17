@@ -427,6 +427,9 @@
             // Flag to temporarily disable observer during click-scroll
             let isScrollingFromClick = false;
 
+            // Flag to track if user has interacted - prevents Home highlight on load
+            let hasUserInteracted = false;
+
             // Function to update active nav link
             function setActiveNav(targetId) {
                 navLinks.forEach(link => {
@@ -442,6 +445,8 @@
                 link.addEventListener('click', function (e) {
                     const href = this.getAttribute('href');
                     if (href && href.startsWith('#')) {
+                        // Mark that user has interacted
+                        hasUserInteracted = true;
                         // Set flag to ignore observer during scroll
                         isScrollingFromClick = true;
 
@@ -464,9 +469,21 @@
                 threshold: 0
             };
 
+
+
+            // Enable highlighting after user scrolls
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 100) {
+                    hasUserInteracted = true;
+                }
+            }, { once: false });
+
             const sectionObserver = new IntersectionObserver((entries) => {
                 // Skip observer updates if user just clicked a nav link
                 if (isScrollingFromClick) return;
+
+                // Skip if user hasn't interacted yet (prevents Home highlight on load)
+                if (!hasUserInteracted) return;
 
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
